@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import type { Product, CartItem } from '../types';
 import { useToast } from '../contexts/ToastContext';
@@ -111,7 +110,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
                             <div className="text-2xl font-extrabold text-white mb-2">
                                 الإجمالي: <span className="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-600">{totalCost.toLocaleString('fr-DZ')} دج</span>
                             </div>
-                             <p className="text-xs text-gray-400 mb-4">سيتم الاتصال بك لتأكيد الطلبية.</p>
+                             <p className="text-xs text-gray-400 mb-4">بعد الضغط على "شراء الآن"، سيتم توجيهك لإرسال الطلب عبر واتساب.</p>
                              <div className="flex flex-col sm:flex-row gap-3">
                                 <button 
                                     onClick={handleBuyNowClick}
