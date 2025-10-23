@@ -46,7 +46,11 @@ export const Header: React.FC<HeaderProps> = ({ isAdminView, cartItemCount, onCa
             <div className={`container mx-auto px-4 md:px-8 transition-all duration-300 border-b ${isScrolled ? 'border-gray-800 shadow-lg' : 'border-transparent'}`}>
                 <div className="flex items-center justify-between gap-4 py-3">
                     <div className="flex items-center space-x-3 flex-shrink-0">
-                        <img src={logoUrl} alt="Store Logo" className={`object-cover rounded-md transition-all duration-300 ${isScrolled ? 'h-10 w-10' : 'h-12 w-12'}`} />
+                        {logoUrl ? (
+                            <img src={logoUrl} alt="Store Logo" className={`object-cover rounded-md transition-all duration-300 ${isScrolled ? 'h-10 w-10' : 'h-12 w-12'}`} />
+                        ) : (
+                            <div className={`bg-gray-700 rounded-md transition-all duration-300 ${isScrolled ? 'h-10 w-10' : 'h-12 w-12'}`}></div>
+                        )}
                     </div>
 
                     {/* Middle part: Search or empty space for alignment */}

@@ -36,8 +36,9 @@ export const PublishSettings: React.FC = () => {
             addToast('تم نشر التغييرات بنجاح! موقعك الآن محدّث للجميع.', 'success');
 
         } catch (error) {
+            const errorMessage = (error as Error).message || 'حدث خطأ أثناء نشر التغييرات. يرجى المحاولة مرة أخرى.';
             console.error("Failed to publish store data:", error);
-            addToast('حدث خطأ أثناء نشر التغييرات. يرجى المحاولة مرة أخرى.', 'error');
+            addToast(errorMessage, 'error');
         } finally {
             setIsPublishing(false);
         }

@@ -66,7 +66,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ items, onClose, ho
             addToast('تم استلام طلبك بنجاح! سيتم التواصل معك للتأكيد.', 'success');
             onClose(); // Close the modal and clear the cart
         } catch (error) {
-            addToast('حدث خطأ أثناء إرسال الطلب. يرجى المحاولة مرة أخرى.', 'error');
+            const errorMessage = (error as Error).message || 'حدث خطأ أثناء إرسال الطلب. يرجى المحاولة مرة أخرى.';
+            addToast(errorMessage, 'error');
             console.error(error);
         } finally {
             setIsPlacingOrder(false);

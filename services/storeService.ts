@@ -5,6 +5,19 @@ import type { PlacedOrder } from '../types';
 const STORE_API_ENDPOINT = '/api/store';
 const ORDERS_API_ENDPOINT = '/api/orders';
 
+// A helper function to create rich error messages from API responses.
+const createApiError = async (response: Response, defaultMessage: string): Promise<Error> => {
+    let errorMessage = defaultMessage;
+    try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorMessage;
+    } catch (e) {
+        // Response body was not JSON or was empty.
+        errorMessage = `${defaultMessage} (Status: ${response.status} ${response.statusText})`;
+    }
+    return new Error(errorMessage);
+};
+
 /**
  * Fetches the latest version of the store data from our serverless function.
  */
@@ -12,9 +25,9 @@ export const fetchStoreData = async (): Promise<any | null> => {
     try {
         const response = await fetch(STORE_API_ENDPOINT);
         if (!response.ok) {
-            throw new Error(`Failed to fetch store data: ${response.statusText}`);
+            throw await createApiError(response, 'Failed to fetch store data.');
         }
-        // Handle cases where the bin is empty and the API returns null
+        // Handle cases where the bin is empty and the API returns an empty response.
         const text = await response.text();
         return text ? JSON.parse(text) : null;
     } catch (error) {
@@ -35,8 +48,7 @@ export const publishStoreData = async (storeData: any): Promise<any> => {
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(`Failed to publish store data: ${errorData.message || response.statusText}`);
+            throw await createApiError(response, 'Failed to publish store data.');
         }
         return await response.json();
     } catch (error) {
@@ -53,7 +65,7 @@ export const fetchOrders = async (): Promise<PlacedOrder[]> => {
     try {
         const response = await fetch(ORDERS_API_ENDPOINT);
         if (!response.ok) {
-            throw new Error(`Failed to fetch orders: ${response.statusText}`);
+            throw await createApiError(response, 'Failed to fetch orders.');
         }
         return await response.json();
     } catch (error) {
@@ -74,8 +86,7 @@ export const placeOrder = async (orderData: Omit<PlacedOrder, 'id'>): Promise<an
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(`Failed to place order: ${errorData.message || response.statusText}`);
+           throw await createApiError(response, 'Failed to place order.');
         }
         return await response.json();
     } catch (error)
@@ -95,8 +106,7 @@ export const clearOrders = async (): Promise<any> => {
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(`Failed to clear orders: ${errorData.message || response.statusText}`);
+            throw await createApiError(response, 'Failed to clear orders.');
         }
         
         return await response.json();
