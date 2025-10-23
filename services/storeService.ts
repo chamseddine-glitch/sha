@@ -1,38 +1,22 @@
-// This service simulates connecting to a simple key-value/JSON hosting service like jsonbin.io.
-// It allows the store data to be fetched by all users and updated by the admin,
-// creating a dynamic experience without a traditional backend.
+// This service now communicates with our own serverless functions,
+// which act as a secure proxy to the JSON storage service.
 import type { PlacedOrder } from '../types';
 
-// The URL points to a specific 'bin' or 'document' where the store's JSON data is stored.
-const JSON_STORE_URL = 'https://api.jsonbin.io/v3/b/669ff422e41b4d34e416a5a8';
-const JSON_ORDERS_URL = 'https://api.jsonbin.io/v3/b/66a18f48e41b4d34e416f48f';
-
-// The API Key is used to get permission to read and write to the bin.
-// In a real-world scenario, this should be handled securely.
-const API_KEY = '$2a$10$wS.B/i5OrT2fU5rTNg4ALO.8o9i4GPx8WH2BFjExoYma9x2uIZ1S2';
+const STORE_API_ENDPOINT = '/api/store';
+const ORDERS_API_ENDPOINT = '/api/orders';
 
 /**
- * Fetches the latest version of the store data from the cloud service.
- * This is called by all users when they load the site.
+ * Fetches the latest version of the store data from our serverless function.
  */
 export const fetchStoreData = async (): Promise<any | null> => {
     try {
-        const response = await fetch(`${JSON_STORE_URL}/latest`, {
-            headers: {
-                'X-Master-Key': API_KEY,
-            },
-        });
-        
+        const response = await fetch(STORE_API_ENDPOINT);
         if (!response.ok) {
-            if (response.status === 404) {
-                console.warn('Store data bin is empty or not found. Using default values.');
-                return null;
-            }
             throw new Error(`Failed to fetch store data: ${response.statusText}`);
         }
-        
-        const data = await response.json();
-        return data.record;
+        // Handle cases where the bin is empty and the API returns null
+        const text = await response.text();
+        return text ? JSON.parse(text) : null;
     } catch (error) {
         console.error("Error fetching store data:", error);
         throw error;
@@ -40,17 +24,13 @@ export const fetchStoreData = async (): Promise<any | null> => {
 };
 
 /**
- * Publishes the new store data to the cloud service.
- * This is called by the admin when they click the "Publish" button.
+ * Publishes the new store data via our serverless function.
  */
 export const publishStoreData = async (storeData: any): Promise<any> => {
     try {
-        const response = await fetch(JSON_STORE_URL, {
+        const response = await fetch(STORE_API_ENDPOINT, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Master-Key': API_KEY,
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(storeData),
         });
 
@@ -58,7 +38,6 @@ export const publishStoreData = async (storeData: any): Promise<any> => {
             const errorData = await response.json();
             throw new Error(`Failed to publish store data: ${errorData.message || response.statusText}`);
         }
-        
         return await response.json();
     } catch (error) {
         console.error("Error publishing store data:", error);
@@ -72,19 +51,11 @@ export const publishStoreData = async (storeData: any): Promise<any> => {
  */
 export const fetchOrders = async (): Promise<PlacedOrder[]> => {
     try {
-        const response = await fetch(`${JSON_ORDERS_URL}/latest`, {
-            headers: {
-                'X-Master-Key': API_KEY,
-            },
-        });
+        const response = await fetch(ORDERS_API_ENDPOINT);
         if (!response.ok) {
-            if (response.status === 404) {
-                return []; // No orders yet, return empty array
-            }
             throw new Error(`Failed to fetch orders: ${response.statusText}`);
         }
-        const data = await response.json();
-        return data.record || [];
+        return await response.json();
     } catch (error) {
         console.error("Error fetching orders:", error);
         throw error;
@@ -92,37 +63,23 @@ export const fetchOrders = async (): Promise<PlacedOrder[]> => {
 };
 
 /**
- * Places a new order by adding it to the list of existing orders.
+ * Places a new order by posting it to our serverless function.
  */
 export const placeOrder = async (orderData: Omit<PlacedOrder, 'id'>): Promise<any> => {
     try {
-        // Fetch the current list of orders
-        const currentOrders = await fetchOrders();
-        
-        // Add the new order with a generated ID
-        const newOrder: PlacedOrder = {
-            ...orderData,
-            id: new Date().toISOString()
-        };
-        const updatedOrders = [...currentOrders, newOrder];
-
-        // PUT the entire updated list back
-        const response = await fetch(JSON_ORDERS_URL, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Master-Key': API_KEY,
-            },
-            body: JSON.stringify(updatedOrders),
+        const response = await fetch(ORDERS_API_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderData),
         });
 
         if (!response.ok) {
             const errorData = await response.json();
             throw new Error(`Failed to place order: ${errorData.message || response.statusText}`);
         }
-        
         return await response.json();
-    } catch (error) {
+    } catch (error)
+    {
         console.error("Error placing order:", error);
         throw error;
     }
@@ -133,14 +90,8 @@ export const placeOrder = async (orderData: Omit<PlacedOrder, 'id'>): Promise<an
  */
 export const clearOrders = async (): Promise<any> => {
      try {
-        // Overwrite the bin with an empty array
-        const response = await fetch(JSON_ORDERS_URL, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Master-Key': API_KEY,
-            },
-            body: JSON.stringify([]),
+        const response = await fetch(ORDERS_API_ENDPOINT, {
+            method: 'DELETE',
         });
 
         if (!response.ok) {
