@@ -33,7 +33,7 @@ export interface OrderDetails {
 
 export interface PlacedOrder {
     id: string;
-    createdAt: Date;
+    createdAt: string;
     customer: OrderDetails;
     items: CartItem[];
     totalAmount: number;

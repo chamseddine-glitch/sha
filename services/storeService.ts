@@ -17,7 +17,11 @@ const API_KEY = '$2a$10$wS.B/i5OrT2fU5rTNg4ALO.8o9i4GPx8WH2BFjExoYma9x2uIZ1S2';
  */
 export const fetchStoreData = async (): Promise<any | null> => {
     try {
-        const response = await fetch(`${JSON_STORE_URL}/latest`);
+        const response = await fetch(`${JSON_STORE_URL}/latest`, {
+            headers: {
+                'X-Master-Key': API_KEY,
+            },
+        });
         
         if (!response.ok) {
             if (response.status === 404) {
@@ -68,7 +72,11 @@ export const publishStoreData = async (storeData: any): Promise<any> => {
  */
 export const fetchOrders = async (): Promise<PlacedOrder[]> => {
     try {
-        const response = await fetch(`${JSON_ORDERS_URL}/latest`);
+        const response = await fetch(`${JSON_ORDERS_URL}/latest`, {
+            headers: {
+                'X-Master-Key': API_KEY,
+            },
+        });
         if (!response.ok) {
             if (response.status === 404) {
                 return []; // No orders yet, return empty array

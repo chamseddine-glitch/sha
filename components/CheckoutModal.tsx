@@ -55,7 +55,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ items, onClose, ho
         const customerDetails: OrderDetails = { name, phone, email, wilaya, commune, shippingMethod, address };
         
         const orderData: Omit<PlacedOrder, 'id'> = {
-            createdAt: new Date(),
+            createdAt: new Date().toISOString(),
             customer: customerDetails,
             items: items,
             totalAmount: total,
